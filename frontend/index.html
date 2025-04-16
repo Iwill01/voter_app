@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Voting App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      text-align: center;
+      padding: 50px;
+    }
+    .hidden {
+      display: none;
+    }
+    #vote-section {
+      margin-top: 30px;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 10px;
+      background-color: #1f1f1f;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #333;
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+    }
+    #timer {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #ff5555;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Secure Voting Panel</h1>
+
+  <div id="auth-section">
+    <p>Enter Security Code:</p>
+    <input type="password" id="code-input" placeholder="Enter Code" />
+    <button onclick="verifyCode()">Submit</button>
+    <p id="error-msg" style="color:red;"></p>
+  </div>
+
+  <div id="vote-section" class="hidden">
+    <h2>Cast Your Vote</h2>
+    <button onclick="castVote('A')">Vote A</button>
+    <button onclick="castVote('B')">Vote B</button>
+    <div id="timer">Time left: 10s</div>
+  </div>
+
+  <script>
+    const VALID_CODE = "1234"; // You can change this to your desired code
+    let countdown;
+    let timeLeft = 10;
+
+    function verifyCode() {
+      const input = document.getElementById("code-input").value;
+      const errorMsg = document.getElementById("error-msg");
+      if (input === VALID_CODE) {
+        document.getElementById("auth-section").classList.add("hidden");
+        document.getElementById("vote-section").classList.remove("hidden");
+        startTimer();
+      } else {
+        errorMsg.textContent = "Invalid code!";
+      }
+    }
+
+    function startTimer() {
+      timeLeft = 10;
+      document.getElementById("timer").textContent = Time left: ${timeLeft}s;
+      countdown = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").textContent = Time left: ${timeLeft}s;
+        if (timeLeft <= 0) {
+          clearInterval(countdown);
+          resetVoting();
+        }
+      }, 1000);
+    }
+
+    function castVote(choice) {
+      fetch("http://localhost:5000/vote", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ choice })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+        clearInterval(countdown);
+        resetVoting();
+      })
+      .catch(err => alert("Error: " + err));
+    }
+
+    function resetVoting() {
+      document.getElementById("vote-section").classList.add("hidden");
+      document.getElementById("auth-section").classList.remove("hidden");
+      document.getElementById("code-input").value = "";
+      document.getElementById("error-msg").textContent = "";
+    }
+  </script>
+
+</body>
+</html>
